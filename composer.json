@@ -1,0 +1,7 @@
+{
+    "require" : {
+       "hybridauth/hybridauth": "^3.10",
+        "guzzlehttp/guzzle": "^7.8",
+        "monolog/monolog": "^2.9"
+    }
+}

@@ -1,24 +1,33 @@
 <?php
+
 class DB {
-    private $dbHost     = "DB_HOST";
-    private $dbUsername = "DB_USERNAME";
-    private $dbPassword = "DB_PASSWORD";
-    private $dbName     = "DB_NAME";
- 
+    
     public function __construct(){
         if(!isset($this->db)){
             // Connect to the database
-            $conn = new mysqli($this->dbHost, $this->dbUsername, $this->dbPassword, $this->dbName);
+            $conn = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
             if($conn->connect_error){
                 die("Failed to connect with MySQL: " . $conn->connect_error);
             }else{
                 $this->db = $conn;
             }
+
+            $this->setup_table();
+        }
+    }
+
+    public function setup_table() {
+        $sql = 'CREATE TABLE IF NOT EXISTS `oauth_token` ( `id` int(11) NOT NULL AUTO_INCREMENT, `provider` varchar(255) NOT NULL, `provider_value` text NOT NULL, PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;';
+
+        if ($this->db->query($sql) === TRUE) {
+            // echo "Table created successfully";
+        } else {
+            // echo "Error creating table: " . $conn->error;
         }
     }
  
     public function is_table_empty() {
-        $result = $this->db->query("SELECT id FROM onedrive_oauth WHERE provider = 'onedrive'");
+        $result = $this->db->query("SELECT id FROM `oauth_token` WHERE provider = 'onedrive'");
         if($result->num_rows) {
             return false;
         }
@@ -27,7 +36,7 @@ class DB {
     }
  
     public function get_access_token() {
-        $sql = $this->db->query("SELECT provider_value FROM onedrive_oauth WHERE provider = 'onedrive'");
+        $sql = $this->db->query("SELECT provider_value FROM `oauth_token` WHERE provider = 'onedrive'");
         $result = $sql->fetch_assoc();
         return json_decode($result['provider_value']);
     }
@@ -39,9 +48,9 @@ class DB {
  
     public function update_access_token($token) {
         if($this->is_table_empty()) {
-            $this->db->query("INSERT INTO onedrive_oauth(provider, provider_value) VALUES('onedrive', '$token')");
+            $this->db->query("INSERT INTO `oauth_token`(provider, provider_value) VALUES('onedrive', '$token')");
         } else {
-            $this->db->query("UPDATE onedrive_oauth SET provider_value = '$token' WHERE provider = 'onedrive'");
+            $this->db->query("UPDATE `oauth_token` SET provider_value = '$token' WHERE provider = 'onedrive'");
         }
     }
 }
